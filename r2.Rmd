@@ -1,0 +1,101 @@
+---
+title: "Untitled"
+author: "Marida Ianni-Ravn"
+date: "2023-01-10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+
+```{r}
+pas <- seq(0.01,0.99,0.01)
+pbs <- seq(0.01,0.99,0.01)
+
+# calculate r2 when the two mutations fall on different sides of the tree
+calc_r2_t1 <- function(pa,pb){
+  r2 <- (pa*pb)/((1-pa)*(1-pb))
+  return(r2)
+}
+# calculate r2 when the two mutations fall on the same side of the tree
+# (one above the other)
+calc_r2_t2 <- function(pa,pb){
+  r2 <- (pa*(1-pb))/((1-pa)*pb)
+  return(r2)
+}
+
+calc_r2_t1(0.1,0.4)
+calc_r2_t2(0.1,0.4)
+```
+
+```{r}
+rs <- expand_grid(pa=pas,pb=pbs) %>%
+  filter(pa+pb<1,pa<pb) %>% # let's take b to be the most frequent mutation
+  rowwise() %>%
+  mutate(r2t1=calc_r2_t1(pa,pb),
+         r2t2=calc_r2_t2(pa,pb),
+         meanp=(pa+pb)/2,
+         pdiff=pb-pa) %>%
+  ungroup()
+
+head(rs)
+```
+
+
+```{r}
+p1 <- rs %>% 
+  ggplot(aes(x=pa,y=pb,fill=r2t1)) +
+  geom_tile(size=0.2) +
+  scale_fill_viridis_c(option = "plasma") 
+p2 <- rs %>% 
+  ggplot(aes(x=pa,y=pb,fill=r2t2)) +
+  geom_tile(size=0.2) +
+  scale_fill_viridis_c(option = "plasma") 
+```
+
+```{r}
+p1
+```
+```{r}
+p2
+```
+
+
+```{r}
+rs %>% 
+  ggplot(aes(x=meanp,y=r2t1,col=pdiff)) +
+  geom_point() + scale_color_viridis_c(option = "plasma") 
+```
+
+```{r}
+rs %>% 
+  ggplot(aes(x=meanp,y=r2t2,col=pdiff)) +
+  geom_point() + scale_color_viridis_c(option = "plasma") 
+```
+```{r}
+rs %>% 
+  ggplot(aes(x=meanp)) +
+  geom_point(aes(y=r2t1,col="different sides of tree"),size=0.1) +
+  geom_point(aes(y=r2t2,col="same side of tree"),size=0.1) +
+  labs(x="mean allele frequency",
+     y="r2",
+     col="mutation topology") +
+  theme_minimal()
+```
+
+
+
+```{r}
+rs %>% 
+  ggplot(aes(x=pdiff)) +
+  geom_point(aes(y=r2t1,col="different sides of tree"),size=0.1) +
+  geom_point(aes(y=r2t2,col="same side of tree"),size=0.1) +
+  labs(x="allele frequency difference",
+       y="r2",
+       col="mutation topology") +
+  theme_minimal()
+```
+
+
