@@ -1,0 +1,34 @@
+initialize() {
+	defineConstant("N", n);  // pop size
+	defineConstant("L", 1e3);    // total chromosome length
+	initializeTreeSeq(checkCoalescence=T);
+	initializeMutationRate(1e-5);
+	initializeRecombinationRate(0);
+	// add deleterious mutation 
+	// fitness effect drawn from a gamma with rate -(d/N)
+	initializeMutationType("m2", 0.5, "g", -(d/N), 1.0);
+	initializeGenomicElementType("g1", m2, 1.0);
+	initializeGenomicElement(g1, 0, L-1);
+	defineConstant("end", 10*N); // calculate length of burn-in
+}
+1 early() {
+	sim.addSubpop("p1", N);
+}
+
+// outputting trees if coalescence occurred
+1: late() {
+	if (sim.cycle>end){
+		if (sim.treeSeqCoalesced())
+		{
+			catn(sim.cycle + ": COALESCED");
+			sim.simulationFinished();
+			sim.treeSeqOutput(rep+".trees",simplify=T);
+			catn("Replicate " + rep + " done!");
+		}
+	}
+}
+// if no coalescence by this cycle, just stop
+100000 late() {
+	catn("NO COALESCENCE BY CYCLE 100000");
+	catn("Replicate " + rep + " done!");
+}

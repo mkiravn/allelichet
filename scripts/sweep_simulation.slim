@@ -1,0 +1,22 @@
+initialize() {
+	defineConstant("N", n);  // pop size
+	defineConstant("L", 1e3);    // total chromosome length
+	initializeMutationType("m2", 1.0, "f", d/N);  // introduced mutation
+	initializeMutationRate(0);
+	initializeMutationType("m1", 0.5, "f", 0.0);
+	initializeGenomicElementType("g1", m1, 1.0);
+	initializeGenomicElement(g1, 0, L-1);
+	initializeRecombinationRate(0);
+	initializeTreeSeq(checkCoalescence=T);
+}
+1 early() { sim.addSubpop("p1", N); }
+1000 late() {
+	target = sample(p1.genomes, 1);
+	target.addNewDrawnMutation(m2, 500);
+}
+1100 late() {
+	fixed = (sum(sim.substitutions.mutationType == m2) == 1);
+	cat(ifelse(fixed, "FIXED\n", "segregating\n"));
+	sim.treeSeqOutput(rep+".trees",simplify=T);
+	
+}

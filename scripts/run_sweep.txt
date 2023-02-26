@@ -1,0 +1,29 @@
+#!/bin/bash
+n=1000
+ds=($(seq -1 0.2 5 | awk '{printf("%d\n", 5*10^$1)}'))
+for d in ${ds[@]}
+    do
+	echo "Starting simulations for d=${d}!"
+        # Define the directory name for the simulation results
+	dirname="./SLiM_output/sweep/$(date +%Y-%m-%d)/n_${n}/d_${d}"
+	echo "Results will be stored in: ${dirname}"
+
+	# Create the directory if it doesn't exist
+	mkdir -p $dirname
+
+	# Go into the directory
+	cd $dirname
+
+	# Loop through the 10 replicates
+	for rep in {1..20}
+		do
+    		# List the contents of the current directory
+    			ls .
+
+    			# Run the SLiM simulation
+    			slim -d rep=$rep -d d=$d -d n=$n ../../../../../sweep1002.slim
+		done
+
+	# Go back to the parent directory
+	cd ../../../../../
+done
